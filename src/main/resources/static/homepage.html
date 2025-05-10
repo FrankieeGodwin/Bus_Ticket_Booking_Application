@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bus List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Subtle animation for card appearance */
+    .fade-in {
+      animation: fadeInUp 0.4s ease-in-out;
+    }
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-8 font-sans">
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-4xl font-bold mb-8 text-center text-gray-800 underline underline-offset-8 decoration-red-500">
+    Available Buses
+  </h1>
+
+  <div id="busList" class="space-y-6">
+    <!-- Buses will be inserted here by JavaScript -->
+  </div>
+</div>
+
+<script>
+  // Example: fetching buses dynamically
+  fetch('http://localhost:8080/buses')
+    .then(response => response.json())
+    .then(data => {
+      const busList = document.getElementById('busList');
+      data.forEach(bus => {
+        const busDiv = document.createElement('div');
+        busDiv.className = 'fade-in p-6 rounded-2xl shadow-lg bg-white flex justify-between items-center border border-gray-200 hover:shadow-xl transition-shadow';
+
+        busDiv.innerHTML = `
+          <div>
+            <h2 class="text-2xl font-bold text-red-600">${bus.bus_travels}</h2>
+            <p class="text-gray-700 text-lg">${bus.source} ➔ ${bus.destination}</p>
+          </div>
+
+          <button
+            onclick="window.location.href='seatDetails.html?busId=${bus.bus_id}'"
+            class="px-5 py-2.5 bg-red-500 text-white font-semibold rounded-full shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+            View Seats
+          </button>
+        `;
+
+        busList.appendChild(busDiv);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching buses:', error);
+    });
+</script>
+</body>
+</html>

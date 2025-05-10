@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Book Seat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+          animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-tr from-gray-100 to-gray-200 p-8 font-sans">
+<div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl fade-in">
+    <h2 class="text-3xl font-bold text-center text-blue-700 mb-6 underline underline-offset-8">Seat Booking</h2>
+
+    <div id="seatDetails" class="mb-6 text-gray-800 space-y-1 bg-gray-50 p-4 rounded-lg border border-blue-100">
+        <!-- Seat info will be loaded here -->
+    </div>
+
+    <form id="bookingForm" class="space-y-5">
+        <div>
+            <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Your Name:</label>
+            <input type="text" id="name" name="name" required
+                   class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm" />
+        </div>
+        <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg font-semibold transition duration-200 shadow-md">
+            Confirm Booking
+        </button>
+    </form>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const seatId = urlParams.get("seatId");
+
+    const seatDetailsDiv = document.getElementById("seatDetails");
+    const bookingForm = document.getElementById("bookingForm");
+
+    // Fetch seat info
+    fetch(`http://localhost:8080/seats/${seatId}`)
+      .then(response => response.json())
+      .then(seat => {
+        seatDetailsDiv.innerHTML = `
+          <p><strong>Seat ID:</strong> ${seat.seat_id}</p>
+          <p><strong>Seat Number:</strong> ${seat.seat_number}</p>
+          <p><strong>Bus Name:</strong> ${seat.bus_travels}</p>
+          <p><strong>Price:</strong> ₹${seat.price}</p>
+        `;
+      })
+      .catch(error => {
+        seatDetailsDiv.innerHTML = `<p class="text-red-500 font-semibold">Seat not found.</p>`;
+        console.error(error);
+      });
+
+    // Handle booking submission
+    bookingForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+
+      fetch(`http://localhost:8080/seats/${seatId}`)
+        .then(response => response.json())
+        .then(seat => {
+          const busId = seat.bus_id;
+          fetch(`http://localhost:8080/tickets/${busId}/${seatId}?passengerName=${encodeURIComponent(name)}`, {
+            method: "POST",
+          })
+            .then(res => {
+              if (res.ok) {
+                alert("Ticket booked successfully!");
+                res.json().then(data => {
+                  const ticketId = data.ticket_id;
+                  window.location.href = `ticket-details.html?ticketId=${ticketId}`;
+                });
+              } else {
+                alert("Failed to book ticket.");
+              }
+            })
+            .catch(error => console.error("Error:", error));
+        })
+        .catch(err => {
+          alert("Failed to retrieve seat details.");
+          console.error(err);
+        });
+    });
+</script>
+</body>
+</html>

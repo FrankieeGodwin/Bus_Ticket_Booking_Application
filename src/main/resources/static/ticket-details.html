@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ticket Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-tr from-gray-100 to-gray-200 p-8 font-sans">
+<div class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl fade-in">
+  <h2 class="text-3xl font-bold text-center text-green-700 mb-6 underline underline-offset-8">Your Ticket Details</h2>
+  <div id="ticketDetails" class="text-gray-800 space-y-2 bg-gray-50 p-5 rounded-lg border border-green-100">
+    <!-- Ticket info will appear here -->
+  </div>
+  <button onclick="printTicketDetails()" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium">
+    Print Ticket as PDF
+  </button>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const ticketId = urlParams.get("ticketId");
+
+  const ticketDetailsDiv = document.getElementById("ticketDetails");
+
+  fetch(`http://localhost:8080/tickets/${ticketId}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Ticket not found");
+      return response.json();
+    })
+    .then(ticket => {
+      ticketDetailsDiv.innerHTML = `
+        <p><strong>Ticket ID:</strong> ${ticket.ticket_id}</p>
+        <p><strong>Passenger Name:</strong> ${ticket.passenger_name}</p>
+        <p><strong>Seat Number:</strong> ${ticket.seat_Number}</p>
+        <p><strong>Bus:</strong> ${ticket.bus_Travels}</p>
+        <p><strong>Price:</strong> ₹${ticket.price}</p>
+      `;
+    })
+    .catch(error => {
+      ticketDetailsDiv.innerHTML = `<p class="text-red-500 font-semibold">Ticket not found.</p>`;
+      console.error(error);
+    });
+ function printTicketDetails() {
+    // Hide the download button when printing to avoid it appearing in the print
+    document.querySelector('button').style.display = 'none';
+
+    // Trigger the print dialog
+    window.print();
+
+    // Re-show the download button after printing
+    document.querySelector('button').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
